@@ -308,9 +308,9 @@
                             Maps
                         </NavLink>
 
-                        <!-- <NavLink :href="route('ranking')" :active="route().current('ranking')">
+                        <NavLink :href="route('ranking')" :active="route().current('ranking')">
                             Ranking
-                        </NavLink> -->
+                        </NavLink>
 
                         <NavLink :href="route('records')" :active="route().current('records')">
                             Records
@@ -353,9 +353,9 @@
                             Maps
                         </ResponsiveNavLink>
 
-                        <!-- <ResponsiveNavLink :href="route('ranking')" :active="route().current('ranking')">
+                        <ResponsiveNavLink :href="route('ranking')" :active="route().current('ranking')">
                             Ranking
-                        </ResponsiveNavLink> -->
+                        </ResponsiveNavLink>
 
                         <ResponsiveNavLink @click="showingNavigationDropdown = false" :href="route('records')" :active="route().current('records')">
                             Records
