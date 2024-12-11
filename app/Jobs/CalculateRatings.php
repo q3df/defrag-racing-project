@@ -67,7 +67,7 @@ class CalculateRatings implements ShouldQueue
 
         $result = $query->get();
 
-        $this->mydebug($result);
+        // $this->mydebug($result);
 
         foreach ($result as $row) {
             // Check if a record with the same mdd_id, physics, and mode exists in player_ratings

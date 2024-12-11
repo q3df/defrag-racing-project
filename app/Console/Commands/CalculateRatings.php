@@ -31,7 +31,6 @@ class CalculateRatings extends Command
      */
 
     public function handle() {
-        Log::info('CalculateRatings job should start.');
         dispatch(new CalculateRatingsJob());
     }
 }
