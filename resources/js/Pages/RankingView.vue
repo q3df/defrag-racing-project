@@ -26,6 +26,12 @@
         'ctf7'
     ];
 
+    const rankingtype = ref('active_players');
+    const rankingtypes = [
+        'active_players',
+        'all_players',
+    ];
+
     const sortByGametype = (gt) => {
         gametype.value = gt;
 
@@ -36,8 +42,19 @@
         })
     }
 
+    const selectRankingType = (rt) => {
+        rankingtype.value = rt;
+
+        router.reload({
+            data: {
+                rankingtype: rt,
+            }
+        })
+    }
+
     watchEffect(() => {
         gametype.value = route().params['gametype'] ?? 'run';
+        rankingtype.value = route().params['rankingtype'] ?? 'active_players';
     });
 
     // ------------------------------------------------------
@@ -102,6 +119,35 @@
                         <template #trigger>
                             <button class="flex items-center text-white bg-grayop-700 py-2 px-4 rounded-md font-bold cursor-pointer bg-grayop-700 hover:bg-gray-600 mr-3">
                                 <div class="w-8 h-8 mr-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                                    </svg>
+                                </div>
+
+                                <div>
+                                    <div class="text-left">
+                                        Ranking Type
+                                    </div>
+
+                                    <div class="text-xs text-gray-500 text-center flex">
+                                        <span>Currently:</span>
+                                        <span class="text-gray-400 uppercase ml-1"> {{ rankingtype }} </span>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+
+                        <template #content>
+                            <div v-for="rt in rankingtypes" @click="selectRankingType(rt)" class="flex justify-between cursor-pointer block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-grayop-800 focus:outline-none focus:bg-gray-100 dark:focus:bg-grayop-800 transition duration-150 ease-in-out">
+                                <span class="uppercase"> {{ rt }} </span>
+                            </div>
+                        </template>
+                    </Dropdown>
+
+                    <Dropdown align="right" width="48" class="mt-2 sm:mt-0">
+                        <template #trigger>
+                            <button class="flex items-center text-white bg-grayop-700 py-2 px-4 rounded-md font-bold cursor-pointer bg-grayop-700 hover:bg-gray-600 mr-3">
+                                <div class="w-8 h-8 mr-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                                     </svg>
@@ -155,7 +201,9 @@
             <div class="md:flex justify-center mb-5">
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col mr-1 justify-center">
                     <div v-if="myVq3Rating">
-                        <MapRecord physics="VQ3" :record="myVq3Rating" />
+
+                        <Rating physics="VQ3" :record="myVq3Rating"/>
+
                     </div>
 
                     <div v-else class="flex items-center justify-center text-gray-500">
@@ -166,7 +214,9 @@
 
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col ml-1 mt-5 md:mt-0 justify-center">
                     <div v-if="myCpmRating">
-                        <MapRecord physics="CPM" :record="myCpmRating" />
+
+                        <Rating physics="CPM" :record="myCpmRating"/>
+
                     </div>
 
                     <div v-else class="flex items-center justify-center text-gray-500 items-center">
@@ -180,7 +230,8 @@
             <div class="md:flex justify-center">
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col mr-1">
                     <div v-if="vq3Ratings.total > 0">
-                        <Rating v-for="rating in vq3Ratings.data" :key="rating.id" :rating="rating" />
+
+                        <Rating v-for="rating in vq3Ratings.data" :key="rating.id" :rating="rating"/>
 
                         <div class="flex justify-center" v-if="vq3Ratings.total > vq3Ratings.per_page">
                             <Pagination pageName="vq3Page" :last_page="vq3Ratings.last_page" :current_page="vq3Ratings.current_page" :link="vq3Ratings.first_page_url" />
@@ -200,7 +251,8 @@
 
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col ml-1 mt-5 md:mt-0">
                     <div v-if="cpmRatings.total > 0">
-                        <Rating v-for="rating in cpmRatings.data" :key="rating.id" :rating="rating" />
+
+                        <Rating v-for="rating in cpmRatings.data" :key="rating.id" :rating="rating"/>
 
                         <div class="flex justify-center" v-if="cpmRatings.total > cpmRatings.per_page">
                             <Pagination pageName="cpmPage" :last_page="cpmRatings.last_page" :current_page="cpmRatings.current_page" :link="cpmRatings.first_page_url" />

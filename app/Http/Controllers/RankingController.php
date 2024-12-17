@@ -4,53 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 use App\Models\PlayerRating;
 
 class RankingController extends Controller
 {
+    const PAGINATION_LIMIT = 50;
+    const ACTIVE_PLAYERS_MONTHS = 3; //keep in sync with one in CalculateRatings.php
+
     public function index(Request $request) {
 
         // get VQ3 and CPM ratings
         $gametype = $request->input('gametype', 'run');
+        $rankingtype = $request->input('rankingtype', 'active_players');
 
-        $ratings = PlayerRating::query();
-        $vq3Ratings = $ratings
-            ->where('physics', 'vq3')
-            ->where('mode', $gametype)
-            ->orderBy('player_rating', 'DESC')
-            ->paginate(50, ['*'], 'vq3Page')
-            ->withQueryString();
-
-        $ratings = PlayerRating::query();
-        $cpmRatings = $ratings
-            ->where('physics', 'cpm')
-            ->where('mode', $gametype)
-            ->orderBy('player_rating', 'DESC')
-            ->paginate(50, ['*'], 'cpmPage')
-            ->withQueryString();
+        $vq3Ratings = $this->getRatings('vq3', $gametype, $rankingtype);
+        $cpmRatings = $this->getRatings('cpm', $gametype, $rankingtype);
 
         // get VQ3 and CPM ratings for the current user
-        if ($request->user() && $request->user()->mdd_id) {
-            $myVq3Rating = PlayerRating::where('mdd_id', $request->user()->mdd_id)
-                ->where('physics', 'vq3')
-                ->where('mode', 'run')
-                ->with('user')
-                ->first();
-
-            $myCpmRating = PlayerRating::where('mdd_id', $request->user()->mdd_id)
-                ->where('physics', 'cpm')
-                ->where('mode', 'run')
-                ->with('user')
-                ->first();
-        } else {
-            $myVq3Rating = null;
-            $myCpmRating = null;
-        }
+        $myVq3Rating = $this->getMyRating($request, 'vq3', $gametype, $rankingtype);
+        $myCpmRating = $this->getMyRating($request, 'cpm', $gametype, $rankingtype);
 
         // handle pagination
-        $cpmPage = ($request->has('cpmPage')) ? min($request->cpmPage, $cpmRatings->lastPage()) : 1;
         $vq3Page = ($request->has('vq3Page')) ? min($request->vq3Page, $vq3Ratings->lastPage()) : 1;
+        $cpmPage = ($request->has('cpmPage')) ? min($request->cpmPage, $cpmRatings->lastPage()) : 1;
 
         if ($request->has('vq3Page') && $request->get('vq3Page') > $vq3Ratings->lastPage()) {
             return redirect()->route('ranking', ['vq3Page' => $vq3Ratings->lastPage()]);
@@ -67,4 +45,70 @@ class RankingController extends Controller
             ->with('myVq3Rating', $myVq3Rating)
             ->with('myCpmRating', $myCpmRating);
     }
+
+    private function getRatings(string $physics, string $gametype, string $rankingtype): LengthAwarePaginator
+    {
+        $query = PlayerRating::query();
+        $columnToChange = '';
+
+        if ($rankingtype === 'active_players') {
+            $query->where('last_activity', '>=', now()->subMonths(self::ACTIVE_PLAYERS_MONTHS));
+            $columnToChange = 'active_players_rank';
+
+        } elseif ($rankingtype === 'all_players') {
+            $columnToChange = 'all_players_rank';
+        }
+
+        // TODO:
+        // remove not used columns
+        $query = $query
+            ->with('user')
+            ->where('physics', $physics)
+            ->where('mode', $gametype)
+            ->orderBy('player_rating', 'DESC')
+            ->paginate(self::PAGINATION_LIMIT, ['*'], $physics . 'Page')
+            ->withQueryString();
+
+        $query->getCollection()->transform(function ($item) use ($columnToChange){
+            $item->rank = $item->$columnToChange;
+            unset($item->$columnToChange);
+            return $item;
+        });
+
+        return $query;
+    }
+
+    private function getMyRating(Request $request, string $physics, string $gametype, string $rankingtype)
+    {
+        $query = PlayerRating::query();
+        $columnToChange = '';
+
+        if ($rankingtype === 'active_players') {
+            $query->where('last_activity', '>=', now()->subMonths(self::ACTIVE_PLAYERS_MONTHS));
+            $columnToChange = 'active_players_rank';
+
+        } elseif ($rankingtype === 'all_players') {
+            $columnToChange = 'all_players_rank';
+        }
+
+        if ($request->user() && $request->user()->mdd_id) {
+            $query = PlayerRating::where('mdd_id', $request->user()->mdd_id)
+                ->where('physics', $physics)
+                ->where('mode', $gametype)
+                ->with('user')
+                ->first();
+
+            $query->getCollection()->transform(function ($item) use ($columnToChange){
+                $item->rank = $item->$columnToChange;
+                unset($item->$columnToChange);
+                return $item;
+            });
+
+        } else {
+            $query = null;
+        }
+
+        return $query;
+    }
 }
+

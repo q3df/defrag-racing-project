@@ -18,7 +18,8 @@ return new class extends Migration
             $table->integer('user_id')->nullable()->default(NULL);
             $table->string('physics');
             $table->string('mode');
-            $table->integer('category_rank');
+            $table->integer('all_players_rank');
+            $table->integer('active_players_rank')->nullable()->default(NULL);
             $table->integer('category_total_participators');
             $table->integer('player_records_in_category');
             $table->datetime('last_activity');

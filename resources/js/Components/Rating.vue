@@ -6,7 +6,7 @@
         rating: Object
     });
 
-    const bestrecordCountry = computed(() => {
+    const bestratingCountry = computed(() => {
         let country = props.rating.user?.country ?? props.rating.country;
 
         return (country == 'XX') ? '_404' : country;
@@ -21,7 +21,7 @@
             <!--- rating data left -->
             <div class="mr-4 flex items-center">
                 <!--- rank -->
-                <div class="font-bold text-white text-lg w-11">{{ rating.category_rank }}</div>
+                <div class="font-bold text-white text-lg w-11">{{ rating.rank }}</div>
 
                 <!--- profile photo -->
                 <img class="h-10 w-10 rounded-full object-cover" :src="rating.user?.profile_photo_path ? '/storage/' + rating.user?.profile_photo_path : '/images/null.jpg'" :alt="rating.user?.name ?? rating.name">

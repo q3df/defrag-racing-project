@@ -21,6 +21,7 @@ class CalculateRatings implements ShouldQueue
     const MIN_TOP1_TIME = 500;
     const MIN_TOP_RELTIME = 0.6;
     const MIN_TOTAL_RECORDS = 50;
+    const ACTIVE_PLAYERS_MONTHS = 3; //keep in sync with one in RankingController.php
     const BANNED_MAPS = ['map1', 'map2', 'map3']; // to be filled with banned map names
 
     // map score configs
@@ -37,7 +38,7 @@ class CalculateRatings implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('CalculateRatings job started:');
+        Log::info('CalculateRatings job started');
 
         $query = DB::table('records')
             ->whereNull('deleted_at')
@@ -59,10 +60,11 @@ class CalculateRatings implements ShouldQueue
         $query = $this->addMapScores($query);
         $query = $this->addWeightedMapScores($query);
         $query = $this->addPlayerRecordsInCategory($query);
+        $query = $this->addLastActivity($query);
         $query = $this->computePlayerRatings($query);
         $query = $this->addCategoryTotalParticipators($query);
-        $query = $this->addCategoryRank($query);
-        $query = $this->addLastActivity($query);
+        $query = $this->addAllPlayersRank($query);
+        $query = $this->addActivePlayersRank($query);
         $query = $this->selectFinalColumns($query);
 
         $result = $query->get();
@@ -88,7 +90,8 @@ class CalculateRatings implements ShouldQueue
                 'user_id' => $row->user_id,
                 'physics' => $row->physics,
                 'mode' => $row->mode,
-                'category_rank' => $row->category_rank,
+                'all_players_rank' => $row->all_players_rank,
+                'active_players_rank' => $row->active_players_rank,
                 'category_total_participators' => $row->category_total_participators,
                 'player_records_in_category' => $row->player_records_in_category,
                 'last_activity' => $row->last_activity,
@@ -96,7 +99,7 @@ class CalculateRatings implements ShouldQueue
             ]);
         }
 
-        Log::info('CalculateRatings job ended.');
+        Log::info('CalculateRatings job ended');
     }
     protected function addRanks($query)
     {
@@ -260,6 +263,18 @@ class CalculateRatings implements ShouldQueue
             '));
     }
 
+    protected function addLastActivity($query)
+    {
+        return DB::table(DB::raw("({$query->toSql()}) as sub"))
+            ->mergeBindings($query)
+            ->addSelect('*')
+            ->addSelect(DB::raw('
+                MAX(date_set)
+                OVER (PARTITION BY mdd_id, physics, mode)
+                AS last_activity
+            '));
+    }
+
     protected function computePlayerRatings($query)
     {
         return DB::table(DB::raw("({$query->toSql()}) as sub"))
@@ -287,7 +302,7 @@ class CalculateRatings implements ShouldQueue
             '));
     }
 
-    protected function addCategoryRank($query)
+    protected function addAllPlayersRank($query)
     {
         return DB::table(DB::raw("({$query->toSql()}) as sub"))
             ->mergeBindings($query)
@@ -295,20 +310,26 @@ class CalculateRatings implements ShouldQueue
             ->addSelect(DB::raw('
                 DENSE_RANK()
                 OVER (PARTITION BY physics, mode ORDER BY player_rating DESC)
-                AS category_rank
+                AS all_players_rank
             '));
     }
 
-    protected function addLastActivity($query)
+    protected function addActivePlayersRank($query)
     {
+        $threeMonthsAgo = now()->subMonths(self::ACTIVE_PLAYERS_MONTHS);
+
         return DB::table(DB::raw("({$query->toSql()}) as sub"))
             ->mergeBindings($query)
             ->addSelect('*')
-            ->addSelect(DB::raw('
-                MAX(date_set)
-                OVER (PARTITION BY physics, mode)
-                AS last_activity
-            '));
+            ->addSelect(DB::raw("
+                DENSE_RANK() OVER (
+                    PARTITION BY physics, mode
+                    ORDER BY CASE
+                        WHEN last_activity >= '{$threeMonthsAgo}' THEN player_rating
+                        ELSE 0
+                    END DESC
+                ) AS active_players_rank
+            "));
     }
 
     protected function selectFinalColumns($query)
@@ -321,7 +342,8 @@ class CalculateRatings implements ShouldQueue
                 'user_id',
                 'physics',
                 'mode',
-                'category_rank',
+                'all_players_rank',
+                'active_players_rank',
                 'category_total_participators',
                 'player_records_in_category',
                 'last_activity',

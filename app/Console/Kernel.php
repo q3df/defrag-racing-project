@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('tournaments:notifications-send')->everyTwoMinutes();
 
-        $schedule->command('run:calculate-ratings')->withoutOverlapping()->everyTenMinutes()->runInBackground();
+        $schedule->command('run:calculate-ratings')->withoutOverlapping()->everyTwoHours()->runInBackground();
     }
 
     /**
