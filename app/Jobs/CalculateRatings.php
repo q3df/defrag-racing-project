@@ -34,7 +34,7 @@ class CalculateRatings implements ShouldQueue
     // player rating configs
     const CFG_D = 0.02; // growth rate for map scores weights
 
-    public $timeout = 1200;
+    public $timeout = 3600;
 
     public function handle(): void
     {
