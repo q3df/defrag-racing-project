@@ -202,7 +202,12 @@
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col mr-1 justify-center">
                     <div v-if="myVq3Rating">
 
-                        <Rating physics="VQ3" :record="myVq3Rating"/>
+                        <div v-if="rankingtype === 'active_players'">
+                            <Rating :rating="myVq3Rating" :rank="myVq3Rating.active_players_rank"/>
+                        </div>
+                        <div v-else>
+                            <Rating :rating="myVq3Rating" :rank="myVq3Rating.all_players_rank"/>
+                        </div>
 
                     </div>
 
@@ -215,7 +220,12 @@
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col ml-1 mt-5 md:mt-0 justify-center">
                     <div v-if="myCpmRating">
 
-                        <Rating physics="CPM" :record="myCpmRating"/>
+                        <div v-if="rankingtype === 'active_players'">
+                            <Rating :rating="myCpmRating" :rank="myCpmRating.active_players_rank"/>
+                        </div>
+                        <div v-else>
+                            <Rating :rating="myCpmRating" :rank="myCpmRating.all_players_rank"/>
+                        </div>
 
                     </div>
 
@@ -231,7 +241,7 @@
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col mr-1">
                     <div v-if="vq3Ratings.total > 0">
 
-                        <Rating v-for="rating in vq3Ratings.data" :key="rating.id" :rating="rating"/>
+                        <Rating v-for="rating in vq3Ratings.data" :key="rating.id" :rating="rating" :rank="rating.rank"/>
 
                         <div class="flex justify-center" v-if="vq3Ratings.total > vq3Ratings.per_page">
                             <Pagination pageName="vq3Page" :last_page="vq3Ratings.last_page" :current_page="vq3Ratings.current_page" :link="vq3Ratings.first_page_url" />
@@ -252,7 +262,7 @@
                 <div class="rounded-md p-3 flex-1 bg-grayop-700 flex flex-col ml-1 mt-5 md:mt-0">
                     <div v-if="cpmRatings.total > 0">
 
-                        <Rating v-for="rating in cpmRatings.data" :key="rating.id" :rating="rating"/>
+                        <Rating v-for="rating in cpmRatings.data" :key="rating.id" :rating="rating" :rank="rating.rank"/>
 
                         <div class="flex justify-center" v-if="cpmRatings.total > cpmRatings.per_page">
                             <Pagination pageName="cpmPage" :last_page="cpmRatings.last_page" :current_page="cpmRatings.current_page" :link="cpmRatings.first_page_url" />

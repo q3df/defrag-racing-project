@@ -92,17 +92,18 @@ class RankingController extends Controller
         }
 
         if ($request->user() && $request->user()->mdd_id) {
-            $query = PlayerRating::where('mdd_id', $request->user()->mdd_id)
+            $query = $query
+                ->where('mdd_id', $request->user()->mdd_id)
                 ->where('physics', $physics)
                 ->where('mode', $gametype)
                 ->with('user')
                 ->first();
 
-            $query->getCollection()->transform(function ($item) use ($columnToChange){
-                $item->rank = $item->$columnToChange;
-                unset($item->$columnToChange);
-                return $item;
-            });
+            // NOTE:
+            // Ideally we should change column name of selected ranking type to
+            // "rank" as in getRatings function but I don't know how.
+            // Because of that there we have additional ifs in RankingView.vue
+            // and in Rating.vue.
 
         } else {
             $query = null;

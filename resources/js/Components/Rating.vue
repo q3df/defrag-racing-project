@@ -3,7 +3,14 @@
     import { computed } from 'vue';
 
     const props = defineProps({
-        rating: Object
+        rating: {
+            type: Object,
+            required: true
+        },
+        rank: {
+            type: Number,
+            default: () => ranking.rank
+        }
     });
 
     const bestratingCountry = computed(() => {
@@ -21,7 +28,7 @@
             <!--- rating data left -->
             <div class="mr-4 flex items-center">
                 <!--- rank -->
-                <div class="font-bold text-white text-lg w-11">{{ rating.rank }}</div>
+                <div class="font-bold text-white text-lg w-11">{{ rank }}</div>
 
                 <!--- profile photo -->
                 <img class="h-10 w-10 rounded-full object-cover" :src="rating.user?.profile_photo_path ? '/storage/' + rating.user?.profile_photo_path : '/images/null.jpg'" :alt="rating.user?.name ?? rating.name">
