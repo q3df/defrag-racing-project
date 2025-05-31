@@ -29,5 +29,9 @@ class DatabaseSeeder extends Seeder
             'plain_name'    =>      $this->faker->name,
             'notification_settings' =>  'all'
         ]);
+
+        $this->call([
+            PageSeeder::class,
+        ]);
     }
 }

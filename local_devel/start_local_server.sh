@@ -38,7 +38,7 @@ fi
 composer dump-autoload
 composer run-script post-update-cmd
 
-if SAIL_NO_CACHE; then
+if [ "$SAIL_NO_CACHE" = true ]; then
     ./vendor/bin/sail build --no-cache
 else
     ./vendor/bin/sail build

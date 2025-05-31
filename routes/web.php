@@ -14,6 +14,7 @@ use App\Http\Controllers\RankingController;
 use App\Http\Controllers\EndpointController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChangelogController;
+use App\Http\Controllers\PagesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,3 +69,7 @@ Route::get('/storage/thumbs/{image}', [WebController::class, 'thumbs'])->name('i
 
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
 Route::get('/announcements', [ChangelogController::class, 'announcements'])->name('announcements');
+
+Route::get('/privacy-policy', [PagesController::class, 'privacypolicy'])->name('pages.privacy-policy');
+Route::get('/privacy-policy-twitch', [PagesController::class, 'privacypolicytwitch'])->name('pages.privacy-policy-twitch');
+Route::get('/pages/{slug}', [PagesController::class, 'index'])->name('pages.show');
