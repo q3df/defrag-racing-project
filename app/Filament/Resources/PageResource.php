@@ -26,10 +26,11 @@ class PageResource extends Resource
             Forms\Components\TextInput::make('title')
                 ->required()
                 ->maxLength(255),
-            Forms\Components\TextInput::make('slug')
+             Forms\Components\TextInput::make('slug')
                 ->required()
-                ->unique(Page::class, 'slug')
-                ->disabled(fn ($record) => $record !== null),
+                ->disabled(fn ($record) => $record !== null)
+                ->unique(ignoreRecord: true)
+                ->dehydrated(fn () => true),
             Forms\Components\Toggle::make('visible')
                 ->required(),
             Forms\Components\Toggle::make('footer_link')
