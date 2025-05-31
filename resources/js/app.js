@@ -51,7 +51,7 @@ const padZero = (num) => {
 
 const q3tohtml = (name) => {
     let colored_name = '';
-    let color = 'white';
+    let color = '7';
 
     for (let i = 0; i < name.length; i++) {
         if (name[i] == '^') {

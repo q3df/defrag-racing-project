@@ -14,6 +14,38 @@ export default {
 
     theme: {
         extend: {
+                typography: (theme) => ({
+                    DEFAULT: {
+                    css: {
+                        '--tw-prose-body': '#d1d5db',
+                        '--tw-prose-headings': '#ffffff',
+                        '--tw-prose-lead': '#9ca3af',
+                        '--tw-prose-links': '#eeeeee',
+                        '--tw-prose-bold': '#ffffff',
+                        '--tw-prose-counters': '#9ca3af',
+                        '--tw-prose-bullets': '#373737',
+                        '--tw-prose-hr': '#374151',
+                        '--tw-prose-quotes': '#f3f4f6',
+                        '--tw-prose-quote-borders': '#374151',
+                        '--tw-prose-captions': '#9ca3af',
+                        '--tw-prose-kbd': '#ffffff',
+                        '--tw-prose-kbd-shadows': '255 255 255',
+                        '--tw-prose-code': '#f3f4f6',
+                        '--tw-prose-pre-code': '#d1d5db',
+                        '--tw-prose-pre-bg': '#000000',
+                        '--tw-prose-th-borders': '#4b5563',
+                        '--tw-prose-td-borders': '#374151',
+
+                        'h2, h3, h4': {
+                            color: theme('colors.white'),
+                        },
+                        'a:hover': {
+                            color: theme('colors.white'),
+                        },
+                    },
+                },
+            }),
+
             borderWidth: {
                 '1': '1px',
             },
