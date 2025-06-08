@@ -137,7 +137,7 @@
             </AlertBanner>
         </div>
 
-        <div class="min-h-screen bg-gray-900 main-background">
+        <div class="min-h-screen bg-gray-900 bg-[url('/images/pattern.svg')]">
             <nav class="border-b border-grayop-700">
                 <!-- Top Bar -->
                 <div class="max-w-8xl mx-auto px-4 md:px-6 lg:px-8">
