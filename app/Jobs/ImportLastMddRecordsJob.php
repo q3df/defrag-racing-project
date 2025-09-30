@@ -8,7 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-use App\External\Q3DFRecordsApi;
+use App\External\Q3DFLastRecordsApi;
 use App\Models\User;
 use App\Models\Map;
 use App\Models\Record;
@@ -17,7 +17,7 @@ use App\Models\MddProfile;
 
 use App\Jobs\ProcessNotificationsJob;
 
-class GetLastMddRecords implements ShouldQueue
+class ImportLastMddRecordsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -26,17 +26,18 @@ class GetLastMddRecords implements ShouldQueue
     public function __construct() {}
 
     public function handle(): void{
-        $api = new Q3DFRecordsApi();
+        $api = new Q3DFLastRecordsApi();
+        echo ("Starting the ImportLastMddRecords from $api->url") . PHP_EOL;
 
-        $records = $api->getMddRecords();
+        list($count, $records) = $api->getMddRecords();
 
         if (count($records) === 0) {
             echo ('No records found !') . PHP_EOL;
+        } else {
+            $this->processRecords($records);
         }
 
-        $this->processRecords($records);
-
-        echo ("Finished Running the GetLastMddRecords.") . PHP_EOL;
+        echo ("Finished Running the ImportLastMddRecords.") . PHP_EOL;
     }
 
     private function processRecords($records) {
@@ -111,7 +112,18 @@ class GetLastMddRecords implements ShouldQueue
         if ($mdd_profile) {
             $mdd_profile->processStats();
         } else {
-            ScrapeProfile::dispatch($newrecord->mdd_id);
+            $mdd_profile = new MddProfile();
+            $mdd_profile->id = $newrecord->mdd_id;
+            $mdd_profile->country = $record['country'];
+            $mdd_profile->name = $record['name'];
+            $mdd_profile->plain_name = preg_replace('/\^\w/', '', $record['name']);
+
+            $user = User::where('mdd_id', $newrecord->mdd_id)->first();
+            if ($user) {
+                $mdd_profile->user_id = $user->id;
+            }
+
+            $mdd_profile->save();
         }
 
         ProcessNotificationsJob::dispatch($newrecord);
